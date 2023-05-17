@@ -15,8 +15,11 @@ export const routes = [
     path: "/signed-in",
     Component: Home,
     loader: async () => {
-      await authPresenter.loginCallbackUseCase();
-      return null;
+      try {
+        authPresenter.loginCallbackUseCase();
+      } finally {
+        return redirect("/");
+      }
     },
   },
   {

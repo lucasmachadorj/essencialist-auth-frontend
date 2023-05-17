@@ -5,10 +5,6 @@ import { AuthController } from "./controller";
 import { AuthPresenter } from "./presenter";
 import { authClientId, authClientSecret, authority } from "../shared/config";
 
-console.log("authority", authority);
-console.log("authClientId", authClientId);
-console.log("authClientSecret", authClientSecret);
-
 const userManager = new UserManager({
   authority,
   client_id: authClientId,
