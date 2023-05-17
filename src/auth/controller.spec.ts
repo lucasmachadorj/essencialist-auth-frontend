@@ -1,7 +1,6 @@
-import { UserManager, UserManagerSettings } from "oidc-client-ts";
 import { AuthController } from "./controller";
-import { AuthRepository } from "./repository";
-import { Gateway } from "./gateway";
+import { OIDCAuthService } from "./OIDCAuthService";
+import { buildUserManagerSettings } from "./fixtures";
 
 jest.mock("oidc-client-ts", () => {
   return {
@@ -17,36 +16,19 @@ jest.mock("oidc-client-ts", () => {
   };
 });
 
-const credentials: UserManagerSettings = {
-  authority: "https://localhost:5001",
-  client_id: "client_id",
-  redirect_uri: "http://localhost:3000/callback",
-  response_type: "code",
-  scope: "openid profile email",
-  post_logout_redirect_uri: "http://localhost:3000/",
-  silent_redirect_uri: "http://localhost:3000/silent",
-  automaticSilentRenew: true,
-  filterProtocolClaims: true,
-  loadUserInfo: true,
-  monitorSession: true,
-  metadata: {
-    end_session_endpoint: "https://localhost:5001/connect/endsession",
-  },
-};
+const userManagerSettings = buildUserManagerSettings();
 
 describe("Auth use cases", () => {
   describe("When user is not logged in", () => {
     describe("When user logins", () => {
       it("Should call redirect to provider signin page", async () => {
-        const userManagerMocked = new UserManager(
-          credentials
-        ) as jest.Mocked<UserManager>;
-        const gateway = new Gateway(userManagerMocked);
-        const repository = new AuthRepository(gateway);
-        const controller = AuthController.create(repository);
+        const authService = new OIDCAuthService(userManagerSettings);
+        jest.spyOn(authService, "getUser").mockResolvedValue(null);
+        jest.spyOn(authService, "signinRedirect");
+        const controller = AuthController.create(authService);
         await controller.loginUseCase();
-        expect(userManagerMocked.getUser).toHaveBeenCalled();
-        expect(userManagerMocked.signinRedirect).toHaveBeenCalled();
+        expect(authService.getUser).toHaveBeenCalled();
+        expect(authService.signinRedirect).toHaveBeenCalled();
       });
     });
   });
@@ -54,15 +36,35 @@ describe("Auth use cases", () => {
   describe("When user is logged in", () => {
     describe("when user logs out", () => {
       it("should call redirect to provider signout page", async () => {
-        const userManagerMocked = new UserManager(
-          credentials
-        ) as jest.Mocked<UserManager>;
-        const gateway = new Gateway(userManagerMocked);
-        const repository = new AuthRepository(gateway);
-        const controller = AuthController.create(repository);
+        const authService = new OIDCAuthService(userManagerSettings);
+        jest.spyOn(authService, "getUser").mockResolvedValue({
+          isExpired: () => false,
+        });
+        jest.spyOn(authService, "signoutRedirect");
+        const controller = AuthController.create(authService);
         await controller.logoutUseCase();
-        expect(userManagerMocked.signoutRedirect).toHaveBeenCalled();
+        expect(authService.signoutRedirect).toHaveBeenCalled();
       });
+    });
+  });
+
+  describe("When provider authorized access ", () => {
+    test("whether user is redirected", async () => {
+      const authService = new OIDCAuthService(userManagerSettings);
+      jest.spyOn(authService, "signinRedirectCallback");
+      const controller = AuthController.create(authService);
+      await controller.loginCallbackUseCase();
+      expect(authService.signinRedirectCallback).toHaveBeenCalled();
+    });
+  });
+
+  describe("When user is logged out", () => {
+    test("whether user is redirected", async () => {
+      const authService = new OIDCAuthService(userManagerSettings);
+      jest.spyOn(authService, "signoutRedirectCallback");
+      const controller = AuthController.create(authService);
+      await controller.logoutCallbackUseCase();
+      expect(authService.signoutRedirectCallback).toHaveBeenCalled();
     });
   });
 });

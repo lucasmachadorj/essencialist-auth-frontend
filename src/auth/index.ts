@@ -1,11 +1,9 @@
-import { UserManager, WebStorageStateStore } from "oidc-client-ts";
-import { Gateway } from "./gateway";
-import { AuthRepository } from "./repository";
 import { AuthController } from "./controller";
-import { AuthPresenter } from "./presenter";
 import { authClientId, authClientSecret, authority } from "../shared/config";
+import { OIDCAuthService } from "./OIDCAuthService";
+import { UserManagerSettings, WebStorageStateStore } from "oidc-client-ts";
 
-const userManager = new UserManager({
+const settings: UserManagerSettings = {
   authority,
   client_id: authClientId,
   client_secret: authClientSecret,
@@ -18,11 +16,10 @@ const userManager = new UserManager({
     end_session_endpoint: `${authority}/v2/logout?client_id=${authClientId}&returnTo=${location.origin}/signed-out`,
   },
   userStore: new WebStorageStateStore({ store: localStorage }),
-});
+};
 
-const gateway = new Gateway(userManager);
-const repository = new AuthRepository(gateway);
-const authController = AuthController.create(repository);
-const authPresenter = AuthPresenter.create(repository);
+const userManager = new OIDCAuthService(settings);
 
-export { authController, authPresenter };
+const authController = AuthController.create(userManager);
+
+export { authController };

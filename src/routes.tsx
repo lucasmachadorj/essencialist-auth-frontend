@@ -1,5 +1,5 @@
 import { redirect } from "react-router-dom";
-import { authController, authPresenter } from "./auth";
+import { authController } from "./auth";
 import { Home } from "./pages";
 
 export const routes = [
@@ -16,7 +16,7 @@ export const routes = [
     Component: Home,
     loader: async () => {
       try {
-        authPresenter.loginCallbackUseCase();
+        authController.loginCallbackUseCase();
       } finally {
         return redirect("/");
       }
@@ -25,7 +25,7 @@ export const routes = [
   {
     path: "/signed-out",
     loader: async () => {
-      await authPresenter.logoutCallbackUseCase();
+      await authController.logoutCallbackUseCase();
       return redirect("/");
     },
   },

@@ -1,24 +1,30 @@
-import { AuthRepository } from "./repository";
+import { AuthService } from "./AuthService";
 
 export class AuthController {
-  private constructor(private repository: AuthRepository) {}
+  private constructor(private authService: AuthService) {}
 
-  static create(repository: AuthRepository) {
-    return new AuthController(repository);
+  static create(authService: AuthService) {
+    return new AuthController(authService);
   }
 
   async loginUseCase() {
-    const userManager = this.repository.getUserManager();
-    const user = await this.repository.getUser();
-    const isUserLoggedIn = user && !user.expired;
+    const user = await this.authService.getUser();
+    const isUserLoggedIn = user && !user.isExpired();
     if (isUserLoggedIn) {
       return;
     }
-    await userManager.signinRedirect();
+    await this.authService.signinRedirect();
   }
 
   async logoutUseCase() {
-    const userManager = this.repository.getUserManager();
-    await userManager.signoutRedirect();
+    await this.authService.signoutRedirect();
+  }
+
+  async loginCallbackUseCase() {
+    await this.authService.signinRedirectCallback();
+  }
+
+  async logoutCallbackUseCase() {
+    await this.authService.signoutRedirectCallback();
   }
 }
