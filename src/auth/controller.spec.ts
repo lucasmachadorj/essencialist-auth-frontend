@@ -51,16 +51,18 @@ describe("Auth use cases", () => {
     });
   });
 
-  describe("when user logs out", () => {
-    it("should call redirect to provider signout page", async () => {
-      const userManagerMocked = new UserManager(
-        credentials
-      ) as jest.Mocked<UserManager>;
-      const gateway = new Gateway(userManagerMocked);
-      const repository = new AuthRepository(gateway);
-      const controller = AuthController.create(repository);
-      await controller.logoutUseCase();
-      expect(userManagerMocked.signoutRedirect).toHaveBeenCalled();
+  describe("When user is logged in", () => {
+    describe("when user logs out", () => {
+      it("should call redirect to provider signout page", async () => {
+        const userManagerMocked = new UserManager(
+          credentials
+        ) as jest.Mocked<UserManager>;
+        const gateway = new Gateway(userManagerMocked);
+        const repository = new AuthRepository(gateway);
+        const controller = AuthController.create(repository);
+        await controller.logoutUseCase();
+        expect(userManagerMocked.signoutRedirect).toHaveBeenCalled();
+      });
     });
   });
 });
