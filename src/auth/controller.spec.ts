@@ -26,7 +26,7 @@ describe("Auth use cases", () => {
         jest.spyOn(authService, "getUser").mockResolvedValue(null);
         jest.spyOn(authService, "signinRedirect");
         const controller = AuthController.create(authService);
-        await controller.loginUseCase();
+        await controller.login();
         expect(authService.getUser).toHaveBeenCalled();
         expect(authService.signinRedirect).toHaveBeenCalled();
       });
@@ -42,7 +42,7 @@ describe("Auth use cases", () => {
         });
         jest.spyOn(authService, "signoutRedirect");
         const controller = AuthController.create(authService);
-        await controller.logoutUseCase();
+        await controller.logout();
         expect(authService.signoutRedirect).toHaveBeenCalled();
       });
     });
@@ -53,7 +53,7 @@ describe("Auth use cases", () => {
       const authService = new OIDCAuthService(userManagerSettings);
       jest.spyOn(authService, "signinRedirectCallback");
       const controller = AuthController.create(authService);
-      await controller.loginCallbackUseCase();
+      await controller.requestTokens();
       expect(authService.signinRedirectCallback).toHaveBeenCalled();
     });
   });
@@ -63,7 +63,7 @@ describe("Auth use cases", () => {
       const authService = new OIDCAuthService(userManagerSettings);
       jest.spyOn(authService, "signoutRedirectCallback");
       const controller = AuthController.create(authService);
-      await controller.logoutCallbackUseCase();
+      await controller.removeTokens();
       expect(authService.signoutRedirectCallback).toHaveBeenCalled();
     });
   });

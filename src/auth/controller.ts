@@ -7,7 +7,7 @@ export class AuthController {
     return new AuthController(authService);
   }
 
-  async loginUseCase() {
+  async login() {
     const user = await this.authService.getUser();
     const isUserLoggedIn = user && !user.isExpired();
     if (isUserLoggedIn) {
@@ -16,15 +16,15 @@ export class AuthController {
     await this.authService.signinRedirect();
   }
 
-  async logoutUseCase() {
+  async logout() {
     await this.authService.signoutRedirect();
   }
 
-  async loginCallbackUseCase() {
+  async requestTokens() {
     await this.authService.signinRedirectCallback();
   }
 
-  async logoutCallbackUseCase() {
+  async removeTokens() {
     await this.authService.signoutRedirectCallback();
   }
 }
